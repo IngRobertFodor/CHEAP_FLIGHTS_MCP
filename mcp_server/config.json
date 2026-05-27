@@ -1,7 +1,8 @@
 {
     "active_airlines": [
+        "ryanair",
         "wizzair",
-        "ryanair"
+        "google_flights"
     ],
     "available_airlines": [
         "ryanair",
