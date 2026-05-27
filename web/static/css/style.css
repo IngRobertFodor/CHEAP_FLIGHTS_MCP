@@ -1,0 +1,353 @@
+/* Flight Finder AI Agent - Styles */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    min-height: 100vh;
+    color: #e0e0e0;
+}
+
+.container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+header {
+    text-align: center;
+    padding: 30px 0;
+}
+
+header h1 {
+    font-size: 2.2em;
+    color: #fff;
+    margin-bottom: 8px;
+}
+
+.subtitle {
+    color: #8892b0;
+    font-size: 1.1em;
+}
+
+section {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+    backdrop-filter: blur(10px);
+}
+
+section h2 {
+    color: #64ffda;
+    margin-bottom: 16px;
+    font-size: 1.3em;
+}
+
+/* Search Form */
+.search-form .form-row {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.form-group {
+    flex: 1;
+    min-width: 150px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 6px;
+    color: #8892b0;
+    font-size: 0.9em;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+    font-size: 1em;
+    transition: border-color 0.3s;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #64ffda;
+}
+
+.form-group input::placeholder {
+    color: #5a6a8a;
+}
+
+/* Checkbox group */
+.checkbox-group label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    color: #e0e0e0;
+    font-size: 0.95em;
+}
+
+.checkbox-group input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: #64ffda;
+}
+
+.email-row {
+    padding: 12px 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.btn-search {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #64ffda, #00bfa5);
+    color: #1a1a2e;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-search:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(100, 255, 218, 0.3);
+}
+
+.btn-search:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Email button */
+.btn-email {
+    margin-top: 16px;
+    padding: 12px 24px;
+    background: linear-gradient(135deg, #ffd700, #ff8c00);
+    color: #1a1a2e;
+    border: none;
+    border-radius: 8px;
+    font-size: 1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.btn-email:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+}
+
+/* Booking link */
+.booking-link {
+    color: #64ffda;
+    text-decoration: none;
+    font-weight: 600;
+    padding: 4px 10px;
+    border: 1px solid #64ffda;
+    border-radius: 4px;
+    font-size: 0.85em;
+    transition: background 0.2s;
+}
+
+.booking-link:hover {
+    background: rgba(100, 255, 218, 0.2);
+}
+
+/* Airlines */
+.airlines-list {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.airline-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: rgba(100, 255, 218, 0.1);
+    border: 1px solid rgba(100, 255, 218, 0.3);
+    border-radius: 20px;
+    font-size: 0.9em;
+}
+
+.airline-tag.active {
+    background: rgba(100, 255, 218, 0.2);
+    border-color: #64ffda;
+    color: #64ffda;
+}
+
+.airline-tag.inactive {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: #8892b0;
+}
+
+.airline-tag button {
+    background: none;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    font-size: 1.1em;
+    padding: 0 4px;
+}
+
+/* Results */
+.results-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12px;
+}
+
+.results-table th,
+.results-table td {
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.results-table th {
+    color: #64ffda;
+    font-weight: 600;
+    font-size: 0.85em;
+    text-transform: uppercase;
+}
+
+.results-table tr:hover {
+    background: rgba(100, 255, 218, 0.05);
+}
+
+.price-cell {
+    font-weight: 700;
+    color: #64ffda;
+    font-size: 1.1em;
+}
+
+.cheapest-row {
+    background: rgba(100, 255, 218, 0.1) !important;
+}
+
+.no-results {
+    text-align: center;
+    padding: 30px;
+    color: #8892b0;
+}
+
+.error-message {
+    background: rgba(255, 82, 82, 0.1);
+    border: 1px solid rgba(255, 82, 82, 0.3);
+    border-radius: 8px;
+    padding: 12px 16px;
+    color: #ff5252;
+    margin-top: 12px;
+}
+
+/* Chat */
+.chat-hint {
+    color: #5a6a8a;
+    font-size: 0.9em;
+    margin-bottom: 12px;
+}
+
+.chat-messages {
+    max-height: 400px;
+    overflow-y: auto;
+    margin-bottom: 12px;
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    min-height: 100px;
+}
+
+.chat-message {
+    margin-bottom: 12px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    max-width: 85%;
+}
+
+.chat-message.user {
+    background: rgba(100, 255, 218, 0.15);
+    margin-left: auto;
+    text-align: right;
+}
+
+.chat-message.assistant {
+    background: rgba(255, 255, 255, 0.08);
+    white-space: pre-wrap;
+}
+
+.chat-form {
+    display: flex;
+    gap: 12px;
+}
+
+.chat-form input {
+    flex: 1;
+    padding: 12px 16px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+    font-size: 1em;
+}
+
+.chat-form input:focus {
+    outline: none;
+    border-color: #64ffda;
+}
+
+.btn-chat {
+    padding: 12px 24px;
+    background: #64ffda;
+    color: #1a1a2e;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.btn-chat:hover {
+    transform: translateY(-1px);
+}
+
+.loading {
+    color: #8892b0;
+    font-style: italic;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .search-form .form-row {
+        flex-direction: column;
+    }
+
+    header h1 {
+        font-size: 1.6em;
+    }
+
+    .chat-message {
+        max-width: 95%;
+    }
+}

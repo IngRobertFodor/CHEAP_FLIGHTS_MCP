@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flight Finder AI Agent</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Flight Finder AI Agent</h1>
+            <p class="subtitle">Hladanie najlacnejsich leteniek cez RyanAir, WizzAir a dalsie</p>
+        </header>
+
+        <!-- Search Form -->
+        <section class="search-section">
+            <h2>Vyhladavanie letov</h2>
+            <form id="searchForm" class="search-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="origin">Odkial (IATA kod)</label>
+                        <input type="text" id="origin" placeholder="BTS" maxlength="3" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="destination">Kam (IATA kod)</label>
+                        <input type="text" id="destination" placeholder="STN" maxlength="3" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="departure_date">Datum odletu</label>
+                        <input type="date" id="departure_date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="return_date">Datum navratu (volitelne)</label>
+                        <input type="date" id="return_date">
+                    </div>
+                    <div class="form-group">
+                        <label for="adults">Cestujuci</label>
+                        <select id="adults">
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Email notification section -->
+                <div class="form-row email-row">
+                    <div class="form-group checkbox-group">
+                        <label>
+                            <input type="checkbox" id="sendEmail"> Odoslat email s vysledkami
+                        </label>
+                    </div>
+                    <div class="form-group" id="emailGroup" style="display:none;">
+                        <label for="emailAddress">Email</label>
+                        <input type="email" id="emailAddress" placeholder="tvoj@gmail.com">
+                    </div>
+                    <div class="form-group" id="maxResultsGroup" style="display:none;">
+                        <label for="maxEmailResults">Max vysledkov</label>
+                        <select id="maxEmailResults">
+                            <option value="3">3</option>
+                            <option value="5">5</option>
+                            <option value="10">10</option>
+                            <option value="1">1</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-search">Hladat lety</button>
+            </form>
+        </section>
+
+        <!-- Airlines Management -->
+        <section class="airlines-section">
+            <h2>Letecke spolocnosti</h2>
+            <div id="airlinesList" class="airlines-list">
+                <span class="loading">Nacitavam...</span>
+            </div>
+        </section>
+
+        <!-- Results -->
+        <section class="results-section" id="resultsSection" style="display:none;">
+            <h2>Vysledky</h2>
+            <div id="resultsContent"></div>
+            <button id="emailBtn" class="btn-email" style="display:none;" onclick="sendEmailWithResults()">Odoslat email</button>
+        </section>
+
+        <!-- AI Chat -->
+        <section class="chat-section">
+            <h2>AI Asistent</h2>
+            <p class="chat-hint">Pytaj sa napr.: "Najdi najlacnejsiu letenku z Bratislavy do Barcelony na jul 2026"</p>
+            <div id="chatMessages" class="chat-messages"></div>
+            <form id="chatForm" class="chat-form">
+                <input type="text" id="chatInput" placeholder="Napis spravu..." autocomplete="off">
+                <button type="submit" class="btn-chat">Odoslat</button>
+            </form>
+        </section>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,136 @@
+================================================================================
+    HOW TO RUN THIS - Postup spustenia
+    Cheap Flights MCP Agent
+================================================================================
+
+
+PREDPOKLADY
+------------
+- Python 3.12+
+- pip (Python package manager)
+- Internetove pripojenie
+- (Volitelne) SAP AI Proxy na localhost:6655 (len pre AI chat)
+
+
+================================================================================
+KROK 1: INSTALACIA
+================================================================================
+
+    cd "C:\Users\I070494\Desktop\TEST AUTOMATION\SCRIPTS\PYTHON\ai_mcp_agents\cheap_flights"
+    pip install -r requirements.txt
+
+
+================================================================================
+KROK 2: SPUSTENIE
+================================================================================
+
+Existuju 2 sposoby pouzitia - BEZ AI a S AI.
+
+
+--- SPOSOB A: BEZ AI (formular) -------------------------------------------
+
+Toto NEPOTREBUJE SAP AI Proxy ani ziadny kluc. Staci internet.
+Formuláar priamo vola RyanAir/WizzAir systemy.
+
+    python web/app.py
+
+Otvor prehliadac: http://localhost:5000
+
+Co mozes:
+- Vyplnit: Odkial (BTS), Kam (STN), Datum, Pocet cestujucich
+- Kliknut "Hladat lety" → dostanes real-time ceny
+- Pridat/odobrat letecke spolocnosti (klik +/x)
+- Aktivovat Google Flights ako kontrolu
+- Zaslat vysledky emailom (checkbox + "Odoslat email")
+
+Ako to funguje:
+  Formular → Flask server → MCP Server → RyanAir/WizzAir API → ceny
+  (Ziadna AI sa nezucastnuje!)
+
+
+--- SPOSOB B: S AI (konverzacia) -------------------------------------------
+
+Toto POTREBUJE SAP AI Proxy bežiaci na localhost:6655.
+Claude AI rozumie tvojej otazke a sam rozhodne co hladat.
+
+    python agent/flight_agent.py
+
+Priklad:
+    Ty: Najdi najlacnejsi let z BTS do STN na 15.7.2026
+    Agent: [vola search_flights] Nasiel som RyanAir za 19.99 EUR...
+
+Ako to funguje:
+  Tvoja otazka → Claude AI (SAP Proxy) → MCP Server → RyanAir/WizzAir → ceny
+  Claude interpretuje vysledky a odpovie po slovensky.
+
+Prikazy: "quit" = koniec, "reset" = nova konverzacia
+
+POZNAMKA: AI chat je dostupny aj vo webovom rozhrani (sekcia "AI Asistent")
+          ale takisto vyzaduje bežiaci SAP AI Proxy.
+
+
+--- SPOSOB C: RYCHLY TEST (bez UI, bez AI) --------------------------------
+
+    python test_search.py
+
+Priamo testuje airline adaptery. Nevyzaduje ani Flask ani SAP Proxy.
+
+
+================================================================================
+KONFIGURACIA
+================================================================================
+
+Subor: mcp_server/config.json
+
+    "active_airlines": ["ryanair", "wizzair"]
+       → ktore spolocnosti sa pouzivaju pri vyhladavani
+
+    "available_airlines": ["ryanair", "wizzair", "google_flights"]
+       → vsetky spolocnosti v systeme (mozes aktivovat)
+
+Zmena: priamo edituj subor alebo pouzi UI tlacidla +/x.
+
+Ak chces Google Flights ako kontrolu:
+    Zmen: "active_airlines": ["ryanair", "wizzair", "google_flights"]
+
+
+================================================================================
+CASTE CHYBY
+================================================================================
+
+"ModuleNotFoundError: No module named 'mcp'"
+    → pip install mcp[cli]
+
+"ModuleNotFoundError: No module named 'ryanair'"
+    → pip install ryanair-py
+
+"ModuleNotFoundError: No module named 'fast_flights'"
+    → pip install fast-flights
+
+"UnicodeEncodeError"
+    → set PYTHONIOENCODING=utf-8
+
+"Connection refused" pri AI chat
+    → SAP AI Proxy nebezi. Spusti ho na localhost:6655.
+
+"Address already in use" pri web server
+    → Port 5000 je obsadeny. Zmen v web/app.py: app.run(port=5001)
+
+WizzAir vracia 429
+    → Retry mechanizmus to skusi 3x automaticky.
+    → Ak stale nefunguje: pockaj 5-10 min.
+
+
+================================================================================
+POZNAMKY
+================================================================================
+
+- Vyhladavanie cez formular funguje BEZ AI a BEZ SAP Proxy
+- AI chat (napisat otazku) vyzaduje SAP AI Proxy
+- RyanAir data su vzdy real-time (priamo z ich API)
+- WizzAir moze byt docasne blokovany (anti-bot ochrana)
+- Google Flights sluzi ako kontrolny/overovaci zdroj
+- Ceny z Google Flights su konvertovane z USD na EUR (live kurz)
+- Ukoncenie web servera: Ctrl+C v terminali
+
+================================================================================

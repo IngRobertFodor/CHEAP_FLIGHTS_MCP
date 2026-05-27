@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cheap-flights-mcp"
+version = "1.0.0"
+description = "MCP server for searching cheap flights in real-time via RyanAir, WizzAir and Google Flights"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.12"
+authors = [
+    {name = "Robert Fodor", email = "ingrobertfodor@gmail.com"},
+]
+keywords = ["mcp", "flights", "ryanair", "wizzair", "google-flights", "ai-agent", "claude", "travel"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Internet :: WWW/HTTP",
+]
+
+dependencies = [
+    "mcp[cli]>=1.0.0",
+    "anthropic>=0.40.0",
+    "httpx>=0.27.0",
+    "ryanair-py>=3.0.0",
+    "fast-flights>=2.0.0",
+    "tenacity>=9.0.0",
+    "flask>=3.0.0",
+    "flask-cors>=4.0.0",
+    "python-dotenv>=1.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/IngRobertFodor/cheap-flights-mcp"
+Repository = "https://github.com/IngRobertFodor/cheap-flights-mcp"
+Issues = "https://github.com/IngRobertFodor/cheap-flights-mcp/issues"
+
+[project.scripts]
+cheap-flights-mcp = "mcp_server.server:mcp.run"
+
+[tool.setuptools.packages.find]
+include = ["mcp_server*", "agent*", "web*"]

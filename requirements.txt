@@ -1,0 +1,20 @@
+# MCP Server (FastMCP pattern)
+mcp[cli]>=1.0.0
+
+# AI Agent
+anthropic>=0.40.0
+httpx>=0.27.0
+
+# Airlines data
+ryanair-py>=3.0.0
+fast-flights>=2.0.0
+
+# Retry mechanism
+tenacity>=9.0.0
+
+# Web UI
+flask>=3.0.0
+flask-cors>=4.0.0
+
+# Configuration
+python-dotenv>=1.0.0

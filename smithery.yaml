@@ -1,0 +1,37 @@
+# Smithery.ai MCP Server Configuration
+# https://smithery.ai/docs/config
+
+startCommand:
+  type: stdio
+  configSchema:
+    type: object
+    properties:
+      currency:
+        type: string
+        default: EUR
+        description: Default currency for flight prices
+  commandFunction: |-
+    (config) => ({
+      command: 'python',
+      args: ['mcp_server/server.py'],
+      env: {}
+    })
+
+name: cheap-flights-mcp
+description: >
+  MCP server for searching cheap flights in real-time.
+  Searches RyanAir, WizzAir, and Google Flights simultaneously
+  using asyncio.gather for parallel queries.
+  Returns sorted results with booking deep links.
+
+tools:
+  - name: search_flights
+    description: Search for flights between two airports. Returns cheapest flights from all active airlines sorted by price.
+  - name: list_active_airlines
+    description: Show currently active airlines (ryanair, wizzair, google_flights).
+  - name: add_airline
+    description: Add an airline to the active search list.
+  - name: remove_airline
+    description: Remove an airline from the active search list.
+  - name: get_destinations
+    description: Get all available destinations from an airport (including seasonal routes).
