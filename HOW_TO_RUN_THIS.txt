@@ -16,12 +16,24 @@ PREDPOKLADY
 KROK 1: INSTALACIA
 ================================================================================
 
-    cd "C:\Users\I070494\Desktop\TEST AUTOMATION\SCRIPTS\PYTHON\ai_mcp_agents\cheap_flights"
+    cd "C:\Users\I070494\Desktop\TEST AUTOMATION\SCRIPTS\CHEAP_FLIGHTS_MCP"
     pip install -r requirements.txt
 
 
 ================================================================================
-KROK 2: SPUSTENIE
+KROK 2: KONFIGURACIA (.env)
+================================================================================
+
+Vytvor subor .env (ak neexistuje):
+
+    AI_PROXY_BASE_URL=http://localhost:6655
+    AI_PROXY_API_KEY=tvoj-api-kluc
+
+POZOR: .env NIKDY NECOMMITUJ! Je v .gitignore.
+
+
+================================================================================
+KROK 3: SPUSTENIE
 ================================================================================
 
 Existuju 2 sposoby pouzitia - BEZ AI a S AI.
@@ -30,7 +42,6 @@ Existuju 2 sposoby pouzitia - BEZ AI a S AI.
 --- SPOSOB A: BEZ AI (formular) -------------------------------------------
 
 Toto NEPOTREBUJE SAP AI Proxy ani ziadny kluc. Staci internet.
-Formuláar priamo vola RyanAir/WizzAir systemy.
 
     python web/app.py
 
@@ -38,19 +49,19 @@ Otvor prehliadac: http://localhost:5000
 
 Co mozes:
 - Vyplnit: Odkial (BTS), Kam (STN), Datum, Pocet cestujucich
-- Kliknut "Hladat lety" → dostanes real-time ceny
+- Kliknut "Hladat lety" - dostanes real-time ceny
 - Pridat/odobrat letecke spolocnosti (klik +/x)
 - Aktivovat Google Flights ako kontrolu
 - Zaslat vysledky emailom (checkbox + "Odoslat email")
 
 Ako to funguje:
-  Formular → Flask server → MCP Server → RyanAir/WizzAir API → ceny
+  Formular -> Flask server -> MCP Server -> RyanAir/WizzAir API -> ceny
   (Ziadna AI sa nezucastnuje!)
 
 
 --- SPOSOB B: S AI (konverzacia) -------------------------------------------
 
-Toto POTREBUJE SAP AI Proxy bežiaci na localhost:6655.
+Toto POTREBUJE SAP AI Proxy beziaci na localhost:6655.
 Claude AI rozumie tvojej otazke a sam rozhodne co hladat.
 
     python agent/flight_agent.py
@@ -59,14 +70,7 @@ Priklad:
     Ty: Najdi najlacnejsi let z BTS do STN na 15.7.2026
     Agent: [vola search_flights] Nasiel som RyanAir za 19.99 EUR...
 
-Ako to funguje:
-  Tvoja otazka → Claude AI (SAP Proxy) → MCP Server → RyanAir/WizzAir → ceny
-  Claude interpretuje vysledky a odpovie po slovensky.
-
 Prikazy: "quit" = koniec, "reset" = nova konverzacia
-
-POZNAMKA: AI chat je dostupny aj vo webovom rozhrani (sekcia "AI Asistent")
-          ale takisto vyzaduje bežiaci SAP AI Proxy.
 
 
 --- SPOSOB C: RYCHLY TEST (bez UI, bez AI) --------------------------------
@@ -76,6 +80,14 @@ POZNAMKA: AI chat je dostupny aj vo webovom rozhrani (sekcia "AI Asistent")
 Priamo testuje airline adaptery. Nevyzaduje ani Flask ani SAP Proxy.
 
 
+--- SPOSOB D: AUTOMATICKY TEST AGENTA -------------------------------------
+
+    python test_agent_prompts.py
+
+Spusti 8 roznych use cases a zobrazi PASS/FAIL pre kazdy.
+Vyzaduje SAP AI Proxy!
+
+
 ================================================================================
 KONFIGURACIA
 ================================================================================
@@ -83,15 +95,12 @@ KONFIGURACIA
 Subor: mcp_server/config.json
 
     "active_airlines": ["ryanair", "wizzair"]
-       → ktore spolocnosti sa pouzivaju pri vyhladavani
+       - ktore spolocnosti sa pouzivaju pri vyhladavani
 
     "available_airlines": ["ryanair", "wizzair", "google_flights"]
-       → vsetky spolocnosti v systeme (mozes aktivovat)
+       - vsetky spolocnosti v systeme (mozes aktivovat)
 
 Zmena: priamo edituj subor alebo pouzi UI tlacidla +/x.
-
-Ak chces Google Flights ako kontrolu:
-    Zmen: "active_airlines": ["ryanair", "wizzair", "google_flights"]
 
 
 ================================================================================
@@ -99,26 +108,23 @@ CASTE CHYBY
 ================================================================================
 
 "ModuleNotFoundError: No module named 'mcp'"
-    → pip install mcp[cli]
+    -> pip install mcp[cli]
 
 "ModuleNotFoundError: No module named 'ryanair'"
-    → pip install ryanair-py
+    -> pip install ryanair-py
 
 "ModuleNotFoundError: No module named 'fast_flights'"
-    → pip install fast-flights
-
-"UnicodeEncodeError"
-    → set PYTHONIOENCODING=utf-8
+    -> pip install fast-flights
 
 "Connection refused" pri AI chat
-    → SAP AI Proxy nebezi. Spusti ho na localhost:6655.
+    -> SAP AI Proxy nebezi. Spusti ho na localhost:6655.
 
 "Address already in use" pri web server
-    → Port 5000 je obsadeny. Zmen v web/app.py: app.run(port=5001)
+    -> Port 5000 je obsadeny. Zmen v web/app.py: app.run(port=5001)
 
 WizzAir vracia 429
-    → Retry mechanizmus to skusi 3x automaticky.
-    → Ak stale nefunguje: pockaj 5-10 min.
+    -> Retry mechanizmus to skusi 3x automaticky.
+    -> Ak stale nefunguje: pockaj 5-10 min.
 
 
 ================================================================================

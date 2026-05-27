@@ -1,4 +1,4 @@
-# cheap-flights-mcp
+# CHEAP_FLIGHTS_MCP
 
 **MCP server for searching cheap flights in real-time via RyanAir, WizzAir, and Google Flights.**
 
@@ -10,12 +10,13 @@ Built with FastMCP (Anthropic's Model Context Protocol), featuring parallel airl
 - **Parallel search** across multiple airlines simultaneously
 - **FastMCP** - modern declarative MCP pattern (2025 standard)
 - **Web UI** - browser-based interface with dark theme
-- **AI Agent** - conversational flight search via Claude
+- **AI Agent** - conversational flight search via Claude (SAP Hyperspace)
 - **Deep booking links** - click to buy directly on airline website
 - **Email results** - send search results via email (mailto: protocol)
 - **Configurable airlines** - add/remove airlines dynamically
 - **USD/EUR conversion** - live exchange rate for Google Flights results
 - **Retry mechanism** - exponential backoff + jitter for rate-limited APIs
+- **Security** - input validation, generic errors, no credentials in code
 
 ## Supported Airlines
 
@@ -28,13 +29,8 @@ Built with FastMCP (Anthropic's Model Context Protocol), featuring parallel airl
 ## Installation
 
 ```bash
-pip install cheap-flights-mcp
-```
-
-Or from source:
-```bash
-git clone https://github.com/IngRobertFodor/cheap-flights-mcp.git
-cd cheap-flights-mcp
+git clone https://github.com/IngRobertFodor/CHEAP_FLIGHTS_MCP.git
+cd CHEAP_FLIGHTS_MCP
 pip install -r requirements.txt
 ```
 
@@ -47,7 +43,7 @@ python web/app.py
 ```
 Open browser: http://localhost:5000
 
-### Option B: CLI AI Agent (requires SAP AI Proxy or Anthropic API)
+### Option B: CLI AI Agent (requires AI Proxy)
 
 ```bash
 python agent/flight_agent.py
@@ -66,6 +62,8 @@ Create a `.env` file:
 AI_PROXY_BASE_URL=http://localhost:6655
 AI_PROXY_API_KEY=your-api-key-here
 ```
+
+> **Note:** The `.env` file is gitignored and never committed. Each user provides their own API key.
 
 Edit `mcp_server/config.json` to configure active airlines:
 ```json
@@ -104,11 +102,21 @@ Agent: [calls search_flights] Found RyanAir BTS->STN for 19.99 EUR...
 ```
 Browser → Flask (app.py) → MCP Server (server.py) → RyanAir/WizzAir API
                                                   → Google Flights
-                        → Claude AI (optional)
+                        → Claude AI (optional, via SAP Hyperspace)
 ```
 
 The web form searches **without AI** - directly calling MCP tools.
-The AI chat requires Claude (via SAP AI Proxy or Anthropic API).
+The AI chat requires Claude (via SAP AI Proxy).
+
+## Testing
+
+```bash
+# Quick test (no AI needed):
+python test_search.py
+
+# Full agent test (8 use cases, requires AI Proxy):
+python test_agent_prompts.py
+```
 
 ## Adding a New Airline
 
@@ -123,8 +131,9 @@ The AI chat requires Claude (via SAP AI Proxy or Anthropic API).
 - API keys stored in `.env` (gitignored, never committed)
 - Flask runs with `debug=False`
 - CORS restricted to localhost
-- Input validation and sanitization
-- No credentials in source code
+- Input validation and sanitization (IATA codes, dates, adults)
+- Generic error messages (no internal info leaked)
+- All logging to stderr (stdout reserved for MCP communication)
 
 ## Tech Stack
 
@@ -135,6 +144,7 @@ The AI chat requires Claude (via SAP AI Proxy or Anthropic API).
 - ryanair-py (RyanAir API)
 - fast-flights (Google Flights)
 - Flask + flask-cors (Web server)
+- SAP Hyperspace AI Proxy (Claude)
 
 ## License
 
