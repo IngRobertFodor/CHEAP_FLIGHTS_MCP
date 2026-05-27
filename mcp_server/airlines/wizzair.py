@@ -1,10 +1,12 @@
 """
 WizzAir adapter - neoficialne WizzAir JSON API s retry mechanizmom.
 Deep link: priamo na vysledky vyhladavania na wizzair.com
+POZOR: Vsetky logy idu do stderr (stdout je pre MCP komunikaciu).
 """
 
 import asyncio
 import random
+import sys
 from datetime import datetime, timedelta
 from typing import Optional
 
@@ -21,6 +23,11 @@ USER_AGENTS = [
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Safari/605.1.15",
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 Edg/126.0.0.0",
 ]
+
+
+def _log(msg: str):
+    """Log do stderr (stdout je pre MCP)."""
+    print(msg, file=sys.stderr)
 
 
 def _build_wizzair_booking_url(origin: str, destination: str, date_str: str, adults: int = 1) -> str:
@@ -68,7 +75,7 @@ class WizzairAdapter(BaseAirline):
                     data = resp.json()
                     self._api_base = data.get("apiUrl", self._api_base)
         except Exception as e:
-            print(f"[WizzAir] Could not fetch metadata: {e}")
+            _log(f"[WizzAir] Could not fetch metadata: {e}")
         return self._api_base
 
     async def search_flights(self, request: FlightSearchRequest) -> FlightSearchResult:
@@ -118,7 +125,7 @@ class WizzairAdapter(BaseAirline):
             try:
                 if attempt > 0:
                     delay = (2 ** attempt) + random.uniform(0.5, 1.5)
-                    print(f"[WizzAir] Retry {attempt}/{max_retries}, waiting {delay:.1f}s...")
+                    _log(f"[WizzAir] Retry {attempt}/{max_retries}, waiting {delay:.1f}s...")
                     await asyncio.sleep(delay)
 
                 async with httpx.AsyncClient(follow_redirects=True) as client:
@@ -143,19 +150,19 @@ class WizzairAdapter(BaseAirline):
                         return outbound_flights, return_flights
 
                     elif resp.status_code == 429:
-                        print(f"[WizzAir] Rate limited (429), attempt {attempt + 1}/{max_retries}")
+                        _log(f"[WizzAir] Rate limited (429), attempt {attempt + 1}/{max_retries}")
                         continue
 
                     else:
-                        print(f"[WizzAir] Status {resp.status_code}, trying fare chart...")
+                        _log(f"[WizzAir] Status {resp.status_code}, trying fare chart...")
                         outbound_flights = await self._search_fare_chart(request)
                         return outbound_flights, return_flights
 
             except httpx.TimeoutException:
-                print(f"[WizzAir] Timeout, attempt {attempt + 1}/{max_retries}")
+                _log(f"[WizzAir] Timeout, attempt {attempt + 1}/{max_retries}")
                 continue
             except Exception as e:
-                print(f"[WizzAir] Error: {e}")
+                _log(f"[WizzAir] Error: {e}")
                 break
 
         return outbound_flights, return_flights
@@ -202,7 +209,7 @@ class WizzairAdapter(BaseAirline):
                                 ),
                             ))
         except Exception as e:
-            print(f"[WizzAir] Fare chart error: {e}")
+            _log(f"[WizzAir] Fare chart error: {e}")
 
         return flights
 
@@ -237,7 +244,7 @@ class WizzairAdapter(BaseAirline):
                             booking_url=_build_wizzair_booking_url(origin, dest, date_str, adults),
                         ))
             except Exception as e:
-                print(f"[WizzAir] Parse error: {e}")
+                _log(f"[WizzAir] Parse error: {e}")
         return flights
 
     async def get_destinations(self, origin: str) -> list[dict]:
@@ -262,7 +269,7 @@ class WizzairAdapter(BaseAirline):
                                     result.append({"code": dest_iata, "city": dest_city, "country": ""})
                                 return result
         except Exception as e:
-            print(f"[WizzAir] Destinations error: {e}")
+            _log(f"[WizzAir] Destinations error: {e}")
         return []
 
     def _find_city(self, cities: list, iata: str) -> str:

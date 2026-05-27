@@ -1,6 +1,13 @@
 {
-    "active_airlines": ["ryanair", "wizzair"],
-    "available_airlines": ["ryanair", "wizzair", "google_flights"],
+    "active_airlines": [
+        "wizzair",
+        "ryanair"
+    ],
+    "available_airlines": [
+        "ryanair",
+        "wizzair",
+        "google_flights"
+    ],
     "default_currency": "EUR",
     "default_adults": 1,
     "max_results_per_airline": 10

@@ -2,9 +2,11 @@
 Google Flights adapter - vyuziva fast-flights kniznicu.
 Zadarmo, bez API kluca, real-time data z Google Flights.
 Obsahuje USD->EUR konverziu (live kurz).
+POZOR: Vsetky logy idu do stderr (stdout je pre MCP komunikaciu).
 """
 
 import asyncio
+import sys
 from datetime import datetime, timedelta
 from typing import Optional
 
@@ -18,8 +20,12 @@ try:
 except ImportError:
     FAST_FLIGHTS_AVAILABLE = False
 
-# Fallback kurz ak API nefunguje
 FALLBACK_USD_TO_EUR = 0.92
+
+
+def _log(msg: str):
+    """Log do stderr (stdout je pre MCP)."""
+    print(msg, file=sys.stderr)
 
 
 async def get_usd_to_eur_rate() -> float:
@@ -55,39 +61,29 @@ class GoogleFlightsAdapter(BaseAirline):
         self.currency = currency
 
     async def search_flights(self, request: FlightSearchRequest) -> FlightSearchResult:
-        """Vyhladaj lety cez Google Flights."""
         result = FlightSearchResult(
             airline=self.name,
             search_timestamp=self._get_timestamp()
         )
 
         try:
-            # Ziskaj aktualny kurz
             usd_to_eur = await get_usd_to_eur_rate()
 
             loop = asyncio.get_running_loop()
             outbound = await loop.run_in_executor(
-                None,
-                self._search_sync,
-                request.origin,
-                request.destination,
-                request.departure_date,
-                request.adults,
-                request.max_results,
-                usd_to_eur
+                None, self._search_sync,
+                request.origin, request.destination,
+                request.departure_date, request.adults,
+                request.max_results, usd_to_eur
             )
             result.outbound_flights = outbound
 
             if request.return_date:
                 returns = await loop.run_in_executor(
-                    None,
-                    self._search_sync,
-                    request.destination,
-                    request.origin,
-                    request.return_date,
-                    request.adults,
-                    request.max_results,
-                    usd_to_eur
+                    None, self._search_sync,
+                    request.destination, request.origin,
+                    request.return_date, request.adults,
+                    request.max_results, usd_to_eur
                 )
                 result.return_flights = returns
 
@@ -97,7 +93,6 @@ class GoogleFlightsAdapter(BaseAirline):
         return result
 
     def _search_sync(self, origin, destination, flight_date, adults, max_results, usd_to_eur):
-        """Synchronne vyhladavanie cez fast-flights."""
         flights = []
 
         try:
@@ -120,7 +115,6 @@ class GoogleFlightsAdapter(BaseAirline):
             if result and result.flights:
                 for i, flight in enumerate(result.flights[:max_results]):
                     try:
-                        # Parse cenu
                         price_usd = 0
                         if hasattr(flight, 'price') and flight.price:
                             price_str = str(flight.price).replace('$', '').replace(',', '').replace(' ', '')
@@ -129,7 +123,6 @@ class GoogleFlightsAdapter(BaseAirline):
                             except ValueError:
                                 price_usd = 0
 
-                        # Konverzia USD -> EUR
                         price_eur = round(price_usd * usd_to_eur, 2)
 
                         dep_time = datetime.now()
@@ -158,7 +151,6 @@ class GoogleFlightsAdapter(BaseAirline):
                             except (ValueError, TypeError):
                                 duration = 0
 
-                        # Google Flights deep link (OVERENY)
                         booking_url = f"https://www.google.com/travel/flights?q=flights+{origin}+{destination}+{date_str}"
 
                         if price_usd > 0:
@@ -178,11 +170,11 @@ class GoogleFlightsAdapter(BaseAirline):
                                 booking_url=booking_url,
                             ))
                     except Exception as e:
-                        print(f"[GoogleFlights] Parse error: {e}")
+                        _log(f"[GoogleFlights] Parse error: {e}")
                         continue
 
         except Exception as e:
-            print(f"[GoogleFlights] Search error: {e}")
+            _log(f"[GoogleFlights] Search error: {e}")
 
         return flights
 

@@ -2,9 +2,11 @@
 RyanAir adapter - vyuziva kniznicu ryanair-py pre pristup k RyanAir API.
 Deep link: priamo na vysledky vyhladavania na ryanair.com
 get_destinations: pouziva oficialny RyanAir routes endpoint (vsetky linky).
+POZOR: Vsetky logy idu do stderr (stdout je pre MCP komunikaciu).
 """
 
 import asyncio
+import sys
 from datetime import datetime, timedelta
 from typing import Optional
 
@@ -18,8 +20,12 @@ try:
 except ImportError:
     RYANAIR_AVAILABLE = False
 
-# RyanAir routes endpoint (vsetky linky z letiska, vratane sezonnych)
 RYANAIR_ROUTES_URL = "https://www.ryanair.com/api/views/locate/searchWidget/routes/en/airport/{}"
+
+
+def _log(msg: str):
+    """Log do stderr (stdout je pre MCP)."""
+    print(msg, file=sys.stderr)
 
 
 class RyanairAdapter(BaseAirline):
@@ -43,7 +49,6 @@ class RyanairAdapter(BaseAirline):
         self.api = Ryanair(currency)
 
     async def search_flights(self, request: FlightSearchRequest) -> FlightSearchResult:
-        """Vyhladaj lety cez RyanAir API."""
         result = FlightSearchResult(
             airline=self.name,
             search_timestamp=self._get_timestamp()
@@ -73,7 +78,6 @@ class RyanairAdapter(BaseAirline):
         return result
 
     def _search_one_way(self, origin, destination, flight_date, flexible, max_results):
-        """Synchronne vyhladavanie jednosmerne."""
         flights = []
 
         try:
@@ -98,12 +102,11 @@ class RyanairAdapter(BaseAirline):
                         flights.append(flight)
 
         except Exception as e:
-            print(f"[RyanAir] Error searching {origin}->{destination}: {e}")
+            _log(f"[RyanAir] Error searching {origin}->{destination}: {e}")
 
         return flights
 
     def _convert_trip(self, trip) -> Optional[Flight]:
-        """Konvertuj ryanair-py trip objekt na Flight."""
         try:
             departure = getattr(trip, 'departureTime', None) or getattr(trip, 'departure_time', None)
             arrival = getattr(trip, 'arrivalTime', None) or getattr(trip, 'arrival_time', None)
@@ -126,7 +129,6 @@ class RyanairAdapter(BaseAirline):
             dest_code = str(destination)[:3].upper()
             dep_date_str = departure.strftime("%Y-%m-%d") if departure else ""
 
-            # OVERENY deep link
             booking_url = (
                 f"https://www.ryanair.com/sk/sk/trip/flights/select"
                 f"?adults=1&dateOut={dep_date_str}&isReturn=false"
@@ -149,13 +151,11 @@ class RyanairAdapter(BaseAirline):
                 booking_url=booking_url,
             )
         except Exception as e:
-            print(f"[RyanAir] Error converting trip: {e}")
+            _log(f"[RyanAir] Error converting trip: {e}")
             return None
 
     async def get_destinations(self, origin: str) -> list[dict]:
-        """Ziskaj KOMPLETNY zoznam destinacii z daneho letiska.
-        Pouziva oficialny RyanAir routes endpoint - vratane sezonnych liniek.
-        """
+        """Kompletny zoznam destinacii (vratane sezonnych) cez Routes API."""
         try:
             url = RYANAIR_ROUTES_URL.format(origin.upper())
             async with httpx.AsyncClient(timeout=10.0) as client:
@@ -181,18 +181,16 @@ class RyanairAdapter(BaseAirline):
                     return destinations
 
         except Exception as e:
-            print(f"[RyanAir] Routes API error: {e}")
+            _log(f"[RyanAir] Routes API error: {e}")
 
-        # Fallback na staru metodu ak routes endpoint zlyhaju
         try:
             loop = asyncio.get_running_loop()
             return await loop.run_in_executor(None, self._get_destinations_fallback, origin)
         except Exception as e:
-            print(f"[RyanAir] Fallback error: {e}")
+            _log(f"[RyanAir] Fallback error: {e}")
             return []
 
     def _get_destinations_fallback(self, origin: str) -> list[dict]:
-        """Fallback - ziskanie destinacii cez cheapest flights."""
         try:
             from datetime import date
             today = date.today()
@@ -216,5 +214,5 @@ class RyanairAdapter(BaseAirline):
 
             return list(destinations.values())
         except Exception as e:
-            print(f"[RyanAir] Fallback error: {e}")
+            _log(f"[RyanAir] Fallback error: {e}")
             return []
