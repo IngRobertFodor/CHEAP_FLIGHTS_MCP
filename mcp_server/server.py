@@ -1,6 +1,7 @@
 """
 MCP Server pre vyhladavanie lacnych leteniek.
 Pouziva moderny FastMCP pattern + asyncio.gather pre paralelne volanie airlines.
+Podporuje stdio (lokalne) aj streamable-http (Smithery/remote) transport.
 """
 
 import json
@@ -237,4 +238,13 @@ async def get_destinations(origin: str) -> str:
 
 
 if __name__ == "__main__":
-    mcp.run()
+    # Rozhodnutie: stdio (lokalne) vs http (remote/Smithery)
+    transport = os.environ.get("MCP_TRANSPORT", "stdio")
+
+    if transport == "streamable-http":
+        # HTTP transport pre Render.com / Smithery
+        port = int(os.environ.get("MCP_PORT", "8000"))
+        mcp.run(transport="streamable-http", host="0.0.0.0", port=port)
+    else:
+        # Default: stdio transport pre lokalne pouzitie
+        mcp.run()
