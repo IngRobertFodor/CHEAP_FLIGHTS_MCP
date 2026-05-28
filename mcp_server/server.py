@@ -2,6 +2,7 @@
 MCP Server pre vyhladavanie lacnych leteniek.
 Pouziva moderny FastMCP pattern + asyncio.gather pre paralelne volanie airlines.
 Podporuje stdio (lokalne) aj streamable-http (Smithery/remote) transport.
+Custom routes: /.well-known/mcp/server-card.json + /health (bez autorizacie).
 """
 
 import json
@@ -12,6 +13,8 @@ from datetime import date
 from pathlib import Path
 
 from mcp.server.fastmcp import FastMCP
+from starlette.requests import Request
+from starlette.responses import JSONResponse
 
 sys.path.insert(0, str(Path(__file__).parent))
 
@@ -47,7 +50,6 @@ def load_env():
 
 
 def get_airline_adapters(config: dict) -> dict:
-    """Vytvor adaptery pre aktivne letecke spolocnosti."""
     adapters = {}
     currency = config.get("default_currency", "EUR")
     active = config.get("active_airlines", [])
@@ -68,13 +70,49 @@ def get_airline_adapters(config: dict) -> dict:
 
 load_env()
 
-# FastMCP - nastavenie host/port pre HTTP transport
-# Render.com nastavi PORT env variable, my ho premapujeme
+# FastMCP s host/port pre HTTP transport
 http_port = int(os.environ.get("PORT", os.environ.get("FASTMCP_PORT", "8000")))
 http_host = os.environ.get("FASTMCP_HOST", "0.0.0.0")
 
 mcp = FastMCP("flight-search", host=http_host, port=http_port)
 
+
+# ============ CUSTOM ROUTES (public, bez autorizacie) ============
+
+@mcp.custom_route("/.well-known/mcp/server-card.json", methods=["GET"])
+async def server_card(request: Request) -> JSONResponse:
+    """Smithery MCP server discovery - public endpoint."""
+    return JSONResponse({
+        "name": "CHEAP_FLIGHTS_MCP",
+        "description": "MCP server for searching cheap flights in real-time via RyanAir, WizzAir and Google Flights.",
+        "version": "1.0.0",
+        "author": "Robert Fodor",
+        "homepage": "https://github.com/IngRobertFodor/CHEAP_FLIGHTS_MCP",
+        "license": "MIT",
+        "transport": "streamable-http",
+        "tools": [
+            {"name": "search_flights", "description": "Search flights between airports sorted by price."},
+            {"name": "list_active_airlines", "description": "Show active airlines."},
+            {"name": "add_airline", "description": "Add airline to active list."},
+            {"name": "remove_airline", "description": "Remove airline from active list."},
+            {"name": "get_destinations", "description": "Get available destinations from airport."},
+        ]
+    })
+
+
+@mcp.custom_route("/health", methods=["GET"])
+async def health_check(request: Request) -> JSONResponse:
+    """Health check endpoint."""
+    return JSONResponse({"status": "ok", "service": "cheap-flights-mcp"})
+
+
+@mcp.custom_route("/", methods=["GET"])
+async def root(request: Request) -> JSONResponse:
+    """Root endpoint."""
+    return JSONResponse({"name": "CHEAP_FLIGHTS_MCP", "status": "running"})
+
+
+# ============ MCP TOOLS ============
 
 @mcp.tool()
 async def search_flights(
