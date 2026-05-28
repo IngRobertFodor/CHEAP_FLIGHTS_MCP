@@ -1,6 +1,6 @@
 """
 Render.com startup script.
-Spusti MCP server v streamable-http mode s /.well-known/mcp/server-card.json endpointom.
+MCP server v streamable-http mode + server-card.json + OAuth stubs.
 """
 import os
 import sys
@@ -29,7 +29,7 @@ spec = importlib.util.spec_from_file_location("server", str(mcp_server_dir / "se
 server_module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(server_module)
 
-# Server card data pre Smithery discovery
+# Server card
 SERVER_CARD = {
     "name": "CHEAP_FLIGHTS_MCP",
     "description": "MCP server for searching cheap flights in real-time via RyanAir, WizzAir and Google Flights.",
@@ -49,23 +49,40 @@ SERVER_CARD = {
 
 
 async def server_card_endpoint(request):
-    """Smithery discovery endpoint."""
     return JSONResponse(SERVER_CARD)
 
 
 async def health(request):
-    """Health check."""
     return JSONResponse({"status": "ok"})
+
+
+async def oauth_protected_resource(request):
+    """OAuth stub - server nepouziva auth, Smithery ho hlada."""
+    return JSONResponse({"resource": "https://cheap-flights-mcp-zp1q.onrender.com"})
+
+
+async def oauth_authorization_server(request):
+    """OAuth stub."""
+    return JSONResponse({"issuer": "https://cheap-flights-mcp-zp1q.onrender.com"})
+
+
+async def openid_configuration(request):
+    """OpenID stub."""
+    return JSONResponse({"issuer": "https://cheap-flights-mcp-zp1q.onrender.com"})
 
 
 # Ziskaj MCP ASGI app
 mcp_app = server_module.mcp.streamable_http_app()
 
-# Kombinuj: server-card.json + health + MCP app
+# Starlette app: server-card + OAuth stubs + MCP na root aj /mcp
 app = Starlette(
     routes=[
         Route("/.well-known/mcp/server-card.json", server_card_endpoint),
+        Route("/.well-known/oauth-protected-resource", oauth_protected_resource),
+        Route("/.well-known/oauth-authorization-server", oauth_authorization_server),
+        Route("/.well-known/openid-configuration", openid_configuration),
         Route("/health", health),
+        Mount("/mcp", mcp_app),
         Mount("/", mcp_app),
     ]
 )
