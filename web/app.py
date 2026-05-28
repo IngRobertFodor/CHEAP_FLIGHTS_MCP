@@ -2,6 +2,7 @@
 Flask web server - REST API a UI pre hladanie leteniek.
 Security: debug=False, CORS localhost, input validation, generic errors.
 Render.com compatible: host=0.0.0.0, PORT from env.
+Smithery: /.well-known/mcp/server-card.json endpoint pre tools discovery.
 """
 
 import asyncio
@@ -22,7 +23,6 @@ load_dotenv(Path(__file__).parent.parent / ".env")
 from agent.flight_agent import FlightAgent
 
 app = Flask(__name__)
-# CORS - povolene pre localhost aj render.com
 CORS(app)
 
 agent = None
@@ -56,6 +56,61 @@ def safe_int(value, default: int = 1, min_val: int = 1, max_val: int = 9) -> int
         return default
 
 
+# ============ SMITHERY / MCP DISCOVERY ============
+
+SERVER_CARD = {
+    "name": "CHEAP_FLIGHTS_MCP",
+    "description": "MCP server for searching cheap flights in real-time. Searches RyanAir, WizzAir and Google Flights simultaneously.",
+    "version": "1.0.0",
+    "author": "Robert Fodor",
+    "homepage": "https://github.com/IngRobertFodor/CHEAP_FLIGHTS_MCP",
+    "repository": "https://github.com/IngRobertFodor/CHEAP_FLIGHTS_MCP",
+    "license": "MIT",
+    "transport": "streamable-http",
+    "tools": [
+        {
+            "name": "search_flights",
+            "description": "Search for flights between two airports. Returns cheapest flights sorted by price.",
+            "parameters": {
+                "origin": "IATA airport code (e.g. BTS, VIE, BUD)",
+                "destination": "IATA airport code (e.g. STN, LTN, BCN)",
+                "departure_date": "Departure date YYYY-MM-DD",
+                "return_date": "Return date YYYY-MM-DD (optional)",
+                "adults": "Number of passengers 1-9 (default 1)",
+                "flexible_dates": "Search +/- 3 days (boolean)"
+            }
+        },
+        {
+            "name": "list_active_airlines",
+            "description": "Show currently active airlines (ryanair, wizzair, google_flights)."
+        },
+        {
+            "name": "add_airline",
+            "description": "Add an airline to the active search list.",
+            "parameters": {"airline_code": "ryanair, wizzair, or google_flights"}
+        },
+        {
+            "name": "remove_airline",
+            "description": "Remove an airline from the active search list.",
+            "parameters": {"airline_code": "ryanair, wizzair, or google_flights"}
+        },
+        {
+            "name": "get_destinations",
+            "description": "Get all available flight destinations from an airport.",
+            "parameters": {"origin": "IATA airport code (e.g. BTS)"}
+        }
+    ]
+}
+
+
+@app.route("/.well-known/mcp/server-card.json")
+def server_card():
+    """Smithery MCP server discovery endpoint."""
+    return jsonify(SERVER_CARD)
+
+
+# ============ MAIN ROUTES ============
+
 @app.route("/")
 def index():
     return render_template("index.html")
@@ -63,7 +118,6 @@ def index():
 
 @app.route("/health")
 def health():
-    """Health check endpoint pre Render.com."""
     return jsonify({"status": "ok", "service": "cheap-flights-mcp"})
 
 
@@ -223,11 +277,9 @@ def reset_chat():
 
 
 if __name__ == "__main__":
-    # Render.com pouziva PORT env variable
     port = int(os.environ.get("PORT", 5000))
     print("=" * 60)
     print("  Flight Search Web Server")
     print(f"  http://0.0.0.0:{port}")
     print("=" * 60)
-    # host=0.0.0.0 pre Render.com (external access)
     app.run(debug=False, host="0.0.0.0", port=port)
