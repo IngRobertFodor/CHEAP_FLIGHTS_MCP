@@ -1,6 +1,7 @@
 """
 Flask web server - REST API a UI pre hladanie leteniek.
 Security: debug=False, CORS localhost, input validation, generic errors.
+Render.com compatible: host=0.0.0.0, PORT from env.
 """
 
 import asyncio
@@ -21,7 +22,8 @@ load_dotenv(Path(__file__).parent.parent / ".env")
 from agent.flight_agent import FlightAgent
 
 app = Flask(__name__)
-CORS(app, origins=["http://localhost:5000", "http://127.0.0.1:5000"])
+# CORS - povolene pre localhost aj render.com
+CORS(app)
 
 agent = None
 loop = None
@@ -41,14 +43,12 @@ def run_async(coro):
 
 
 def sanitize_input(value, max_length: int = 100) -> str:
-    """Sanitizuj vstup."""
     if not isinstance(value, str):
         return ""
     return value.strip()[:max_length]
 
 
 def safe_int(value, default: int = 1, min_val: int = 1, max_val: int = 9) -> int:
-    """Bezpecna konverzia na int s limitmi."""
     try:
         v = int(value)
         return max(min_val, min(v, max_val))
@@ -59,6 +59,12 @@ def safe_int(value, default: int = 1, min_val: int = 1, max_val: int = 9) -> int
 @app.route("/")
 def index():
     return render_template("index.html")
+
+
+@app.route("/health")
+def health():
+    """Health check endpoint pre Render.com."""
+    return jsonify({"status": "ok", "service": "cheap-flights-mcp"})
 
 
 @app.route("/api/search", methods=["POST"])
@@ -78,17 +84,14 @@ def search_flights():
     if not origin or not destination or not departure_date:
         return jsonify({"error": "Povinne polia: origin, destination, departure_date"}), 400
 
-    # IATA validacia
     if not origin.isalpha() or len(origin) != 3:
         return jsonify({"error": "Neplatny IATA kod: origin (3 pismena)"}), 400
     if not destination.isalpha() or len(destination) != 3:
         return jsonify({"error": "Neplatny IATA kod: destination (3 pismena)"}), 400
 
-    # Rovnake origin a destination
     if origin == destination:
         return jsonify({"error": "Origin a destination musia byt rozne"}), 400
 
-    # Datum validacia
     try:
         dep_date = date.fromisoformat(departure_date)
     except ValueError:
@@ -123,7 +126,6 @@ def search_flights():
         return jsonify(json.loads(result))
 
     except Exception as e:
-        # Genericka chybova sprava (neodhaluje internals)
         print(f"[Flask] Search error: {e}", file=sys.stderr)
         return jsonify({"error": "Nastala chyba pri vyhladavani. Skuste znova."}), 500
 
@@ -221,9 +223,11 @@ def reset_chat():
 
 
 if __name__ == "__main__":
+    # Render.com pouziva PORT env variable
+    port = int(os.environ.get("PORT", 5000))
     print("=" * 60)
     print("  Flight Search Web Server")
+    print(f"  http://0.0.0.0:{port}")
     print("=" * 60)
-    print("  http://localhost:5000")
-    print("=" * 60)
-    app.run(debug=False, host="127.0.0.1", port=5000)
+    # host=0.0.0.0 pre Render.com (external access)
+    app.run(debug=False, host="0.0.0.0", port=port)
