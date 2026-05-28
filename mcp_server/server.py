@@ -74,7 +74,7 @@ load_env()
 http_port = int(os.environ.get("PORT", os.environ.get("FASTMCP_PORT", "8000")))
 http_host = os.environ.get("FASTMCP_HOST", "0.0.0.0")
 
-mcp = FastMCP("flight-search", host=http_host, port=http_port)
+mcp = FastMCP("flight-search", host=http_host, port=http_port, streamable_http_path="/mcp")
 
 
 # ============ CUSTOM ROUTES (public, bez autorizacie) ============
