@@ -1,5 +1,7 @@
 # CHEAP_FLIGHTS_MCP
 
+[![smithery badge](https://smithery.ai/badge/ingrobertfodor/CHEAP_FLIGHTS_MCP)](https://smithery.ai/servers/ingrobertfodor/CHEAP_FLIGHTS_MCP)
+
 **MCP server for searching cheap flights in real-time via RyanAir, WizzAir, and Google Flights.**
 
 Built with FastMCP (Anthropic's Model Context Protocol), featuring parallel airline queries via `asyncio.gather`, exponential backoff retry, and verified booking deep links.
@@ -32,6 +34,11 @@ Built with FastMCP (Anthropic's Model Context Protocol), featuring parallel airl
 git clone https://github.com/IngRobertFodor/CHEAP_FLIGHTS_MCP.git
 cd CHEAP_FLIGHTS_MCP
 pip install -r requirements.txt
+```
+
+Or via Smithery:
+```bash
+npx @smithery/cli install @ingrobertfodor/CHEAP_FLIGHTS_MCP
 ```
 
 ## Quick Start

@@ -1,0 +1,55 @@
+{
+  "name": "CHEAP_FLIGHTS_MCP",
+  "description": "MCP server for searching cheap flights in real-time. Searches RyanAir, WizzAir and Google Flights simultaneously using asyncio.gather for parallel queries. Includes Web UI, AI Agent (Claude via SAP Hyperspace), exponential backoff retry, USD/EUR conversion, and verified booking deep links.",
+  "version": "1.0.0",
+  "author": "Robert Fodor",
+  "homepage": "https://github.com/IngRobertFodor/CHEAP_FLIGHTS_MCP",
+  "repository": "https://github.com/IngRobertFodor/CHEAP_FLIGHTS_MCP",
+  "license": "MIT",
+  "transport": "stdio",
+  "command": "python mcp_server/server.py",
+  "tools": [
+    {
+      "name": "search_flights",
+      "description": "Search for flights between two airports. Returns cheapest flights from all active airlines sorted by price. Supports one-way and return flights.",
+      "parameters": {
+        "origin": "IATA airport code (e.g. BTS, VIE, BUD)",
+        "destination": "IATA airport code (e.g. STN, LTN, BCN)",
+        "departure_date": "Departure date in YYYY-MM-DD format",
+        "return_date": "Return date in YYYY-MM-DD format (optional)",
+        "adults": "Number of adult passengers (1-9, default 1)",
+        "flexible_dates": "Search +/- 3 days (boolean, default false)"
+      }
+    },
+    {
+      "name": "list_active_airlines",
+      "description": "Show currently active airlines used for searching (ryanair, wizzair, google_flights)."
+    },
+    {
+      "name": "add_airline",
+      "description": "Add an airline to the active search list.",
+      "parameters": {
+        "airline_code": "Airline code: ryanair, wizzair, or google_flights"
+      }
+    },
+    {
+      "name": "remove_airline",
+      "description": "Remove an airline from the active search list.",
+      "parameters": {
+        "airline_code": "Airline code: ryanair, wizzair, or google_flights"
+      }
+    },
+    {
+      "name": "get_destinations",
+      "description": "Get all available flight destinations from an airport (including seasonal routes).",
+      "parameters": {
+        "origin": "IATA airport code (e.g. BTS)"
+      }
+    }
+  ],
+  "keywords": ["flights", "ryanair", "wizzair", "google-flights", "travel", "cheap-flights", "mcp", "ai-agent"],
+  "requirements": {
+    "python": ">=3.12",
+    "dependencies": "See requirements.txt"
+  }
+}
