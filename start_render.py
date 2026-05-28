@@ -1,20 +1,22 @@
 """
 Render.com startup script.
-Spusti MCP server v streamable-http mode.
-Render pouziva PORT env variable.
+Spusti MCP server v streamable-http mode na PORT z env.
 """
 import os
 import sys
+from pathlib import Path
 
-# Nastav transport na HTTP
+# Nastav environment
 os.environ["MCP_TRANSPORT"] = "streamable-http"
-
-# Render.com prideluje PORT dynamicky
 port = os.environ.get("PORT", "10000")
 os.environ["MCP_PORT"] = port
 
-# Spusti MCP server
-sys.path.insert(0, os.path.dirname(__file__))
-os.chdir(os.path.join(os.path.dirname(__file__), "mcp_server"))
+# Pridaj mcp_server do Python path
+project_root = Path(__file__).parent
+sys.path.insert(0, str(project_root / "mcp_server"))
 
-exec(open("server.py").read())
+# Import MCP server a spustenie
+from server import mcp
+
+if __name__ == "__main__":
+    mcp.run(transport="streamable-http", host="0.0.0.0", port=int(port))
