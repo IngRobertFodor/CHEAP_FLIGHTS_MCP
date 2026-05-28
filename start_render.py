@@ -1,28 +1,28 @@
 """
 Render.com startup script.
-Spusti MCP server v streamable-http mode.
-FastMCP automaticky cita PORT z env variable.
+Spusti MCP server v streamable-http mode na Render.com PORT.
 """
 import os
 import sys
 import importlib.util
 from pathlib import Path
 
-# Nastav environment PRED importom
-os.environ["MCP_TRANSPORT"] = "streamable-http"
+# Render.com nastavi PORT env variable
+port = int(os.environ.get("PORT", "10000"))
 
-# FastMCP pouziva HOST a PORT env variables automaticky
-# Render.com nastavi PORT, my nastavime HOST
-os.environ.setdefault("HOST", "0.0.0.0")
+# Nastav MCP env
+os.environ["MCP_TRANSPORT"] = "streamable-http"
+os.environ["UVICORN_HOST"] = "0.0.0.0"
+os.environ["UVICORN_PORT"] = str(port)
 
 # Cesty
 project_root = Path(__file__).resolve().parent
 mcp_server_dir = project_root / "mcp_server"
 
-# Pridaj mcp_server dir do path (pre airlines import v server.py)
+# Pridaj mcp_server dir do path
 sys.path.insert(0, str(mcp_server_dir))
 
-# Zmen working directory (server.py cita config.json cez Path(__file__).parent)
+# Zmen working directory
 os.chdir(str(mcp_server_dir))
 
 # Importuj server.py
@@ -30,5 +30,5 @@ spec = importlib.util.spec_from_file_location("server", str(mcp_server_dir / "se
 server_module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(server_module)
 
-# Spusti MCP server - FastMCP cita PORT z env automaticky
-server_module.mcp.run(transport="streamable-http")
+# Spusti MCP server s explicitnym portom
+server_module.mcp.run(transport="streamable-http", port=port)
