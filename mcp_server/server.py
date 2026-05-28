@@ -67,7 +67,13 @@ def get_airline_adapters(config: dict) -> dict:
 
 
 load_env()
-mcp = FastMCP("flight-search")
+
+# FastMCP - nastavenie host/port pre HTTP transport
+# Render.com nastavi PORT env variable, my ho premapujeme
+http_port = int(os.environ.get("PORT", os.environ.get("FASTMCP_PORT", "8000")))
+http_host = os.environ.get("FASTMCP_HOST", "0.0.0.0")
+
+mcp = FastMCP("flight-search", host=http_host, port=http_port)
 
 
 @mcp.tool()
@@ -115,7 +121,6 @@ async def search_flights(
 
     adapters = get_airline_adapters(config)
 
-    # PARALELNE volanie vsetkych airlines naraz
     tasks = [adapter.search_flights(request) for adapter in adapters.values()]
     results = await asyncio.gather(*tasks, return_exceptions=True)
 
@@ -238,14 +243,9 @@ async def get_destinations(origin: str) -> str:
 
 
 if __name__ == "__main__":
-    # Rozhodnutie: stdio (lokalne) vs http (remote/Smithery)
     transport = os.environ.get("MCP_TRANSPORT", "stdio")
 
     if transport == "streamable-http":
-        # HTTP transport pre Render.com / Smithery
-        # FastMCP cita HOST a PORT z env automaticky
-        os.environ.setdefault("HOST", "0.0.0.0")
         mcp.run(transport="streamable-http")
     else:
-        # Default: stdio transport pre lokalne pouzitie
         mcp.run()
