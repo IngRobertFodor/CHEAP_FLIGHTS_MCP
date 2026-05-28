@@ -243,8 +243,9 @@ if __name__ == "__main__":
 
     if transport == "streamable-http":
         # HTTP transport pre Render.com / Smithery
-        port = int(os.environ.get("MCP_PORT", "8000"))
-        mcp.run(transport="streamable-http", host="0.0.0.0", port=port)
+        # FastMCP cita HOST a PORT z env automaticky
+        os.environ.setdefault("HOST", "0.0.0.0")
+        mcp.run(transport="streamable-http")
     else:
         # Default: stdio transport pre lokalne pouzitie
         mcp.run()
